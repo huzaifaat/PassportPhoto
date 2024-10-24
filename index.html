@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passport Size Photo Upload</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-blue-50 text-gray-800">
+
+    <!-- Container -->
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-white shadow-lg rounded-lg max-w-4xl w-full p-8">
+
+            <!-- Heading -->
+            <h1 class="text-3xl font-bold text-center text-blue-600 mb-8">Convert Your Photo to Passport Size</h1>
+
+            <!-- Guidelines Section -->
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">Upload Guidelines:</h2>
+                <p class="text-gray-600 mb-2">Make sure your photo meets the following requirements for the best results:</p>
+                <ul class="list-disc pl-5 text-gray-600">
+                    <li>Face must be clearly visible with neutral expressions.</li>
+                    <li>Head positioned centrally with eyes looking directly at the camera.</li>
+                    <li>Avoid shadows on the face or background.</li>
+                </ul>
+            </div>
+
+            <!-- Example Images Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="flex flex-col items-center">
+                    <img src="./right.png" alt="Correct Example" class="w-32 h-32 rounded-full shadow-md mb-4">
+                    <p class="text-center text-gray-500">Correct Example</p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="./wrong.png" alt="Incorrect Example" class="w-32 h-32 rounded-full shadow-md mb-4">
+                    <p class="text-center text-gray-500">Incorrect Example</p>
+                </div>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="border border-blue-500 p-6 rounded-lg text-center">
+                <label class="block text-lg font-semibold mb-4 text-blue-700">Upload Your Photo</label>
+                <input id="imageInput" type="file" accept="image/*" class="mb-6 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-100 file:text-blue-600 hover:file:bg-blue-200 cursor-pointer">
+                <button onclick="uploadImage()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all">Upload & Convert</button>
+                <p id="successMessage" class="text-green-600 mt-4 hidden">Image uploaded successfully!</p>
+
+                <!-- Preview Section for Response Image -->
+                <div id="resultImageContainer" class="hidden mt-6">
+                    <h2 class="text-lg font-semibold mb-4 text-blue-700">Converted Passport-Size Photo:</h2>
+                    <img id="resultImage" class="mx-auto shadow-lg rounded-lg w-32 h-32" alt="Converted Photo" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function uploadImage() {
+            const input = document.getElementById('imageInput');
+            const successMessage = document.getElementById('successMessage');
+            const resultImageContainer = document.getElementById('resultImageContainer');
+            const resultImage = document.getElementById('resultImage');
+            
+            if (input.files.length === 0) {
+                alert("Please select an image to upload.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', input.files[0]);
+
+            fetch('http://150.136.57.165:8000/pic', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob(); // Get the image as a blob
+                } else {
+                    throw new Error('Failed to upload the image.');
+                }
+            })
+            .then(blob => {
+                const imageUrl = URL.createObjectURL(blob); // Create a URL for the image
+                resultImage.src = imageUrl; // Set the image URL to the img element
+                resultImageContainer.classList.remove('hidden'); // Show the image container
+                successMessage.classList.remove('hidden');
+                successMessage.textContent = "Image uploaded successfully!";
+            })
+            .catch(error => {
+                successMessage.classList.remove('hidden');
+                successMessage.textContent = "An error occurred: " + error.message;
+                successMessage.classList.replace('text-green-600', 'text-red-600');
+            });
+        }
+    </script>
+
+</body>
+</html>
